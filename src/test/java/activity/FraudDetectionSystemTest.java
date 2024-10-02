@@ -81,6 +81,31 @@ public class FraudDetectionSystemTest {
     }
 
     @Test
+    void test_checkForFraud_WHEN_location_changed_within_a_long_time_frame(){
+        final var pastTransaction = new FraudDetectionSystem.Transaction(
+                10,
+                LocalDateTime.now().minusDays(1),
+                "location_1"
+        );
+        final var pastTransactions = List.of(pastTransaction);
+        final var currentTransaction = new FraudDetectionSystem.Transaction(
+                10,
+                LocalDateTime.now(),
+                "location_2"
+        );
+        final var checkResult = fraudDetectionSystem
+                .checkForFraud(
+                        currentTransaction,
+                        pastTransactions,
+                        new ArrayList<>()
+                );
+        assertFalse(checkResult.isFraudulent);
+        assertFalse(checkResult.isBlocked);
+        assertFalse(checkResult.verificationRequired);
+        assertEquals(0, checkResult.riskScore);
+    }
+
+    @Test
     void test_checkForFraud_WHEN_location_is_in_blacklist(){
         final var currentTransaction = new FraudDetectionSystem.Transaction(
                 10,
