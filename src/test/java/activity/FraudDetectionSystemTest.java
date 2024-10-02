@@ -31,7 +31,7 @@ public class FraudDetectionSystemTest {
         assertTrue(checkResult.isFraudulent);
         assertFalse(checkResult.isBlocked);
         assertTrue(checkResult.verificationRequired);
-        assertEquals(checkResult.riskScore, 50);
+        assertEquals(50, checkResult.riskScore);
 
     }
 
@@ -52,7 +52,7 @@ public class FraudDetectionSystemTest {
         assertFalse(checkResult.isFraudulent);
         assertTrue(checkResult.isBlocked);
         assertFalse(checkResult.verificationRequired);
-        assertEquals(checkResult.riskScore, 30);
+        assertEquals(30, checkResult.riskScore);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class FraudDetectionSystemTest {
         assertTrue(checkResult.isFraudulent);
         assertFalse(checkResult.isBlocked);
         assertTrue(checkResult.verificationRequired);
-        assertEquals(checkResult.riskScore, 20);
+        assertEquals(20, checkResult.riskScore);
     }
 
     @Test
@@ -97,6 +97,6 @@ public class FraudDetectionSystemTest {
         assertFalse(checkResult.isFraudulent);
         assertTrue(checkResult.isBlocked);
         assertFalse(checkResult.verificationRequired);
-        assertEquals(checkResult.riskScore, 100);
+        assertEquals(100, checkResult.riskScore);
     }
 }
