@@ -131,5 +131,44 @@ public class FlightBookingSystemTest {
         assertFalse(bookingResult.pointsUsed);
     }
 
+    @Test
+    void test_bookFlight_WHEN_cancellation_AND_4_passengers_AND_24_hours_to_departure() {
+        final var bookingResult = flightBookingSystem
+                .bookFlight(
+                        4,
+                        LocalDateTime.now(),
+                        5,
+                        100,
+                        100,
+                        true,
+                        LocalDateTime.now().plusHours(24),
+                        0
+                );
+
+        assertFalse(bookingResult.confirmation);
+        assertEquals(0, bookingResult.totalPrice, 0.01);
+        assertEquals(160, bookingResult.refundAmount, 0.01);
+        assertFalse(bookingResult.pointsUsed);
+    }
+
+    @Test
+    void test_bookFlight_WHEN_cancellation_AND_4_passengers_AND_48_hours_to_departure() {
+        final var bookingResult = flightBookingSystem
+                .bookFlight(
+                        4,
+                        LocalDateTime.now(),
+                        5,
+                        100,
+                        100,
+                        true,
+                        LocalDateTime.now().plusHours(48),
+                        0
+                );
+
+        assertFalse(bookingResult.confirmation);
+        assertEquals(0, bookingResult.totalPrice, 0.01);
+        assertEquals(320, bookingResult.refundAmount, 0.01);
+        assertFalse(bookingResult.pointsUsed);
+    }
 
 }
