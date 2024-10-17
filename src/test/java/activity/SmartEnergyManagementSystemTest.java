@@ -549,6 +549,194 @@ public class SmartEnergyManagementSystemTest {
         assertTrue(result.temperatureRegulationActive);
         assertEquals(19.0, result.totalEnergyUsed); // Reduced from 21.0 by turning off devices
     }
+    @Test
+void test_manageEnergy_WHEN_currentPrice_equals_priceThreshold() {
+    // Given
+    double currentPrice = 0.1;
+    double priceThreshold = 0.1;
+    var devicePriorities = Map.of("Lights", 1, "Appliances", 2);
+    var currentTime = LocalDateTime.of(2021, 1, 1, 12, 0);
+    double currentTemperature = 22.0;
+    double[] desiredTemperatureRange = {20.0, 25.0};
+    double energyUsageLimit = 100.0;
+    double totalEnergyUsedToday = 50.0;
+    List<SmartEnergyManagementSystem.DeviceSchedule> scheduledDevices = emptyList();
+
+    // When
+    var result = smartEnergyManagementSystem.manageEnergy(
+            currentPrice, priceThreshold, devicePriorities, currentTime, currentTemperature, desiredTemperatureRange,
+            energyUsageLimit, totalEnergyUsedToday, scheduledDevices
+    );
+
+    // Then
+    final var expectedDeviceStatus = Map.of(
+            "Lights", true,
+            "Appliances", true,
+            "Heating", false,
+            "Cooling", false
+    );
+    assertEquals(expectedDeviceStatus, result.deviceStatus);
+    assertFalse(result.energySavingMode);
+    assertFalse(result.temperatureRegulationActive);
+    assertEquals(50.0, result.totalEnergyUsed);
+}
+
+@Test
+void test_manageEnergy_WHEN_time_is_exactly_night_mode_start() {
+    // Given
+    double currentPrice = 0.05;
+    double priceThreshold = 0.1;
+    var devicePriorities = Map.of("Security", 1, "Refrigerator", 1, "Lights", 2, "Appliances", 3);
+    var currentTime = LocalDateTime.of(2021, 1, 1, 23, 0); // 11:00 PM
+    double currentTemperature = 22.0;
+    double[] desiredTemperatureRange = {20.0, 24.0};
+    double energyUsageLimit = 100.0;
+    double totalEnergyUsedToday = 20.0;
+    List<SmartEnergyManagementSystem.DeviceSchedule> scheduledDevices = emptyList();
+
+    // When
+    var result = smartEnergyManagementSystem.manageEnergy(
+            currentPrice, priceThreshold, devicePriorities, currentTime, currentTemperature,
+            desiredTemperatureRange, energyUsageLimit, totalEnergyUsedToday, scheduledDevices
+    );
+
+    // Then
+    final var expectedDeviceStatus = Map.of(
+            "Security", true,
+            "Refrigerator", true,
+            "Lights", false,
+            "Appliances", false,
+            "Heating", false,
+            "Cooling", false
+    );
+    assertEquals(expectedDeviceStatus, result.deviceStatus);
+    assertFalse(result.energySavingMode);
+    assertFalse(result.temperatureRegulationActive);
+    assertEquals(20.0, result.totalEnergyUsed);
+}
+
+@Test
+void test_manageEnergy_WHEN_time_is_exactly_night_mode_end() {
+    // Given
+    double currentPrice = 0.05;
+    double priceThreshold = 0.1;
+    var devicePriorities = Map.of("Security", 1, "Refrigerator", 1, "Lights", 2, "Appliances", 3);
+    var currentTime = LocalDateTime.of(2021, 1, 1, 6, 0); // 6:00 AM
+    double currentTemperature = 22.0;
+    double[] desiredTemperatureRange = {20.0, 24.0};
+    double energyUsageLimit = 100.0;
+    double totalEnergyUsedToday = 20.0;
+    List<SmartEnergyManagementSystem.DeviceSchedule> scheduledDevices = emptyList();
+
+    // When
+    var result = smartEnergyManagementSystem.manageEnergy(
+            currentPrice, priceThreshold, devicePriorities, currentTime, currentTemperature,
+            desiredTemperatureRange, energyUsageLimit, totalEnergyUsedToday, scheduledDevices
+    );
+
+    // Then
+    final var expectedDeviceStatus = Map.of(
+            "Security", true,
+            "Refrigerator", true,
+            "Lights", true,
+            "Appliances", true,
+            "Heating", false,
+            "Cooling", false
+    );
+    assertEquals(expectedDeviceStatus, result.deviceStatus);
+    assertFalse(result.energySavingMode);
+    assertFalse(result.temperatureRegulationActive);
+    assertEquals(20.0, result.totalEnergyUsed);
+}
+@Test
+void test_manageEnergy_WHEN_currentTemperature_equals_desiredTemperatureRange_lower_bound() {
+    // Given
+    double currentPrice = 0.05;
+    double priceThreshold = 0.1;
+    var devicePriorities = Map.of("Heating", 1, "Cooling", 1);
+    var currentTime = LocalDateTime.of(2021, 1, 1, 12, 0);
+    double currentTemperature = 20.0; // Equal to lower bound
+    double[] desiredTemperatureRange = {20.0, 25.0};
+    double energyUsageLimit = 100.0;
+    double totalEnergyUsedToday = 50.0;
+    List<SmartEnergyManagementSystem.DeviceSchedule> scheduledDevices = emptyList();
+
+    // When
+    var result = smartEnergyManagementSystem.manageEnergy(
+        currentPrice, priceThreshold, devicePriorities, currentTime, currentTemperature, desiredTemperatureRange,
+        energyUsageLimit, totalEnergyUsedToday, scheduledDevices
+    );
+
+    // Then
+    final var expectedDeviceStatus = Map.of(
+            "Heating", false,
+            "Cooling", false
+    );
+    assertEquals(expectedDeviceStatus, result.deviceStatus);
+    assertFalse(result.temperatureRegulationActive);
+}
+
+@Test
+void test_manageEnergy_WHEN_currentTemperature_equals_desiredTemperatureRange_upper_bound() {
+    // Given
+    double currentPrice = 0.05;
+    double priceThreshold = 0.1;
+    var devicePriorities = Map.of("Heating", 1, "Cooling", 1);
+    var currentTime = LocalDateTime.of(2021, 1, 1, 12, 0);
+    double currentTemperature = 25.0; // Equal to upper bound
+    double[] desiredTemperatureRange = {20.0, 25.0};
+    double energyUsageLimit = 100.0;
+    double totalEnergyUsedToday = 50.0;
+    List<SmartEnergyManagementSystem.DeviceSchedule> scheduledDevices = emptyList();
+
+    // When
+    var result = smartEnergyManagementSystem.manageEnergy(
+        currentPrice, priceThreshold, devicePriorities, currentTime, currentTemperature, desiredTemperatureRange,
+        energyUsageLimit, totalEnergyUsedToday, scheduledDevices
+    );
+
+    // Then
+    final var expectedDeviceStatus = Map.of(
+            "Heating", false,
+            "Cooling", false
+    );
+    assertEquals(expectedDeviceStatus, result.deviceStatus);
+    assertFalse(result.temperatureRegulationActive);
+}
+@Test
+void test_manageEnergy_WHEN_totalEnergyUsedToday_equals_energyUsageLimit() {
+    // Given
+    double currentPrice = 0.05;
+    double priceThreshold = 0.1;
+    var devicePriorities = Map.of("Lights", 2, "Appliances", 3);
+    var currentTime = LocalDateTime.of(2021, 1, 1, 12, 0);
+    double currentTemperature = 22.0;
+    double[] desiredTemperatureRange = {20.0, 25.0};
+    double energyUsageLimit = 50.0;
+    double totalEnergyUsedToday = 50.0; // Equal to limit
+    List<SmartEnergyManagementSystem.DeviceSchedule> scheduledDevices = emptyList();
+
+    // When
+    var result = smartEnergyManagementSystem.manageEnergy(
+        currentPrice, priceThreshold, devicePriorities, currentTime, currentTemperature, desiredTemperatureRange,
+        energyUsageLimit, totalEnergyUsedToday, scheduledDevices
+    );
+
+    // Then
+    final var expectedDeviceStatus = Map.of(
+            "Lights", false,
+            "Appliances", false,
+            "Heating", false,
+            "Cooling", false
+    );
+    assertEquals(expectedDeviceStatus, result.deviceStatus);
+    assertFalse(result.temperatureRegulationActive);
+    assertTrue(result.totalEnergyUsed <= energyUsageLimit);
+}
+
+
+
+
 
 
 
