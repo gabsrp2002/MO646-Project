@@ -42,7 +42,12 @@ public class FraudDetectionSystemTest {
                 LocalDateTime.now(),
                 "location"
         );
-        final var pastTransactions = Collections.nCopies(11, currentTransaction);
+        final var pastTransaction = new FraudDetectionSystem.Transaction(
+                10,
+                LocalDateTime.now().minusMinutes(60),
+                "location"
+        );
+        final var pastTransactions = Collections.nCopies(11, pastTransaction);
         final var checkResult = fraudDetectionSystem
                 .checkForFraud(
                         currentTransaction,
@@ -84,7 +89,7 @@ public class FraudDetectionSystemTest {
     void test_checkForFraud_WHEN_location_changed_within_a_long_time_frame(){
         final var pastTransaction = new FraudDetectionSystem.Transaction(
                 10,
-                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now().minusMinutes(30),
                 "location_1"
         );
         final var pastTransactions = List.of(pastTransaction);
@@ -123,5 +128,26 @@ public class FraudDetectionSystemTest {
         assertTrue(checkResult.isBlocked);
         assertFalse(checkResult.verificationRequired);
         assertEquals(100, checkResult.riskScore);
+    }
+
+    @Test
+    void test_checkForFraud_WHEN_transaction_amount_is_low_and_few_transactions_in_short_time(){
+        final var currentTransaction = new FraudDetectionSystem.Transaction(
+                10000,
+                LocalDateTime.now(),
+                "location"
+        );
+        final var pastTransactions = Collections.nCopies(10, currentTransaction);
+        final var checkResult = fraudDetectionSystem
+                .checkForFraud(
+                        currentTransaction,
+                        pastTransactions,
+                        new ArrayList<>()
+                );
+        assertFalse(checkResult.isFraudulent);
+        assertFalse(checkResult.isBlocked);
+        assertFalse(checkResult.verificationRequired);
+        assertEquals(0, checkResult.riskScore);
+
     }
 }
