@@ -37,14 +37,15 @@ public class FraudDetectionSystemTest {
 
     @Test
     void test_checkForFraud_WHEN_lots_of_transactions_in_short_time(){
+        final var now = LocalDateTime.now();
         final var currentTransaction = new FraudDetectionSystem.Transaction(
                 10,
-                LocalDateTime.now(),
+                now,
                 "location"
         );
         final var pastTransaction = new FraudDetectionSystem.Transaction(
                 10,
-                LocalDateTime.now().minusMinutes(60),
+                now.minusMinutes(60),
                 "location"
         );
         final var pastTransactions = Collections.nCopies(11, pastTransaction);
@@ -87,15 +88,16 @@ public class FraudDetectionSystemTest {
 
     @Test
     void test_checkForFraud_WHEN_location_changed_within_a_long_time_frame(){
+        final var now = LocalDateTime.now();
         final var pastTransaction = new FraudDetectionSystem.Transaction(
                 10,
-                LocalDateTime.now().minusMinutes(30),
+                now.minusMinutes(30),
                 "location_1"
         );
         final var pastTransactions = List.of(pastTransaction);
         final var currentTransaction = new FraudDetectionSystem.Transaction(
                 10,
-                LocalDateTime.now(),
+                now,
                 "location_2"
         );
         final var checkResult = fraudDetectionSystem
